@@ -7,11 +7,12 @@ function Form() {
   const [fields, setFields] = useState([]);
 
   const addField = () => {
-    setFields([
-      ...fields,
-      { id: Date.now(), label: "", type: "TEXT", options: [] },
-    ]);
-  };
+  setFields([
+    ...fields,
+    { id: Date.now(), label: "", type: "TEXT", options: [], required: false },
+  ]);
+};
+
 
   const updateField = (id, key, value) => {
     setFields((prev) =>
@@ -32,25 +33,30 @@ function Form() {
     );
   };
 
-  const handleSubmit = async () => {
-    try {
-      const formRes = await axios.post("http://localhost:8000/form/v1/forms", formInfo);
-      const form_id = formRes.data.data._id;
+const handleSubmit = async () => {
+  try {
+    const formRes = await axios.post("http://localhost:8000/form/v1/forms", formInfo);
+    const form_id = formRes.data.data._id;
 
-      const payload = fields.map(({ label, type, options }) => ({
+    const payload = fields
+      .filter(field => field.label.trim() !== "") 
+      .map(({ label, type, options, required }) => ({
         form_id,
-        title: label,
+        title: label.trim(),
         type,
+        required,
         options: type === "CHECKBOX" ? options : [],
       }));
 
-      await axios.post("http://localhost:8000/form/v1/form-fields/bulk", payload);
-      alert("Form and fields created successfully!");
-    } catch (err) {
-      console.error(err);
-      alert("Something went wrong!");
-    }
-  };
+    await axios.post("http://localhost:8000/form/v1/form-fields/bulk", payload);
+    alert("Form and fields created successfully!");
+  } catch (err) {
+    console.error(err);
+    alert("Something went wrong!");
+  }
+};
+
+
 
   return (
     <div className="min-h-screen bg-gray-100 p-8">
@@ -89,45 +95,55 @@ function Form() {
             <h2 className="text-xl font-semibold mt-4">Add Fields</h2>
 
             {fields.map((field) => (
-              <div key={field.id} className="space-y-2 mb-4 border-b pb-4">
-                <div className="flex items-center gap-2">
-                  <input
-                    type="text"
-                    placeholder="Field label"
-                    value={field.label}
-                    onChange={(e) =>
-                      updateField(field.id, "label", e.target.value)
-                    }
-                    className="flex-1 p-2 border rounded"
-                  />
-                  <select
-                    value={field.type}
-                    onChange={(e) =>
-                      updateField(field.id, "type", e.target.value)
-                    }
-                    className="p-2 border rounded"
-                  >
-                    <option value="TEXT">TEXT</option>
-                    <option value="CHECKBOX">CHECKBOX</option>
-                  </select>
-                </div>
+  <div key={field.id} className="space-y-2 mb-4 border-b pb-4">
+    <div className="flex items-center gap-2">
+      <input
+        type="text"
+        placeholder="Field label"
+        value={field.label}
+        onChange={(e) =>
+          updateField(field.id, "label", e.target.value)
+        }
+        className="flex-1 p-2 border rounded"
+      />
+      <select
+        value={field.type}
+        onChange={(e) =>
+          updateField(field.id, "type", e.target.value)
+        }
+        className="p-2 border rounded"
+      >
+        <option value="TEXT">TEXT</option>
+        <option value="CHECKBOX">CHECKBOX</option>
+      </select>
+    </div>
 
-                {field.type === "CHECKBOX" && (
-                  <div className="space-y-1">
-                    <p className="text-sm font-medium">Options</p>
-                    <AddOptionInput
-                      fieldId={field.id}
-                      onAddOption={addOptionToField}
-                    />
-                    <ul className="list-disc ml-5 text-sm text-gray-700">
-                      {field.options.map((opt, idx) => (
-                        <li key={idx}>{opt}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
+    {field.type === "CHECKBOX" && (
+      <div className="space-y-1">
+        <p className="text-sm font-medium">Options</p>
+        <AddOptionInput fieldId={field.id} onAddOption={addOptionToField} />
+        <ul className="list-disc ml-5 text-sm text-gray-700">
+          {field.options.map((opt, idx) => (
+            <li key={idx}>{opt}</li>
+          ))}
+        </ul>
+      </div>
+    )}
+
+    <div className="flex items-center gap-2">
+  <input
+    type="checkbox"
+    checked={field.required}
+    onChange={(e) =>
+      updateField(field.id, "required", e.target.checked)
+    }
+  />
+  <label className="text-sm">Required</label>
+</div>
+
+  </div>
+))}
+
 
             <button
               onClick={addField}
