@@ -35,7 +35,8 @@ function Form() {
 
 const handleSubmit = async () => {
   try {
-    const formRes = await axios.post("http://localhost:8000/form/v1/forms", formInfo);
+    const api_url = import.meta.env.VITE_API_URL
+    const formRes = await axios.post(`${api_url}/forms`, formInfo);
     const form_id = formRes.data.data._id;
 
     const payload = fields
@@ -48,7 +49,7 @@ const handleSubmit = async () => {
         options: type === "CHECKBOX" ? options : [],
       }));
 
-    await axios.post("http://localhost:8000/form/v1/form-fields/bulk", payload);
+    await axios.post(`${api_url}/form-fields/bulk`, payload);
     alert("Form and fields created successfully!");
   } catch (err) {
     console.error(err);

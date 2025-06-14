@@ -11,7 +11,8 @@ function FormPage() {
   useEffect(() => {
     const fetchForm = async () => {
       try {
-        const res = await axios.get(`http://localhost:8000/form/v1/forms/${id}`);
+        const api_url = import.meta.env.VITE_API_URL
+        const res = await axios.get(`${api_url}/forms/${id}`);
         const form = res.data.data;
         setFormData(form);
 
@@ -97,7 +98,8 @@ function FormPage() {
   });
 
   try {
-    const res = await axios.post("http://localhost:8000/form/v1/form-fields-data/bulk", payload);
+    const api_url = import.meta.env.VITE_API_URL
+    const res = await axios.post(`${api_url}/form-fields-data/bulk`, payload);
     console.log("Success:", res.data);
     alert("Form submitted successfully!");
   } catch (err) {

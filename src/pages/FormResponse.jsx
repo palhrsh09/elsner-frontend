@@ -10,7 +10,8 @@ const FormResponses = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const res = await fetch(`http://localhost:8000/form/v1/forms/data/${id}`);
+         const api_url = import.meta.env.VITE_API_URL
+        const res = await fetch(`${api_url}/forms/data/${id}`);
         const result = await res.json();
         const { data, formTitle, formDescription } = result.data;
 
